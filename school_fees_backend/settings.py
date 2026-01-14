@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7#8+%jfbmpxge!tygw_3utu9g5ipfe#^$g-f(7s6ft5q+_%*cl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['~school-payment-system-jeaj.onrender.com']
 
 
 # Application definition
