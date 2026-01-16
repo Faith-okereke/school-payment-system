@@ -47,3 +47,11 @@ class Payment(models.Model):
             print(f"Error verifying payment: {e}")
             
         return False
+
+
+class StudentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    reg_number = models.CharField(max_length=11)
+
+    def __str__(self):
+        return self.reg_number
