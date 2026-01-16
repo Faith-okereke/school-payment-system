@@ -3,9 +3,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # This means: when user visits the homepage, show initiate_payment
-    path('', views.initiate_payment, name='initiate_payment'),
+    path('signup/', views.signup, name='signup'),
+    path('login/', views.login, name='login'),
+    path('test-token/', views.test_token, name='test_token'),
     
-    # This handles the verification link
+    path('initiate-payment/', views.initiate_payment, name='initiate_payment'),
     path('verify/<str:ref>/', views.verify_payment, name='verify_payment'),
 ]

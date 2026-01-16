@@ -1,26 +1,29 @@
 # payments/models.py
 from django.db import models
+from django.contrib.auth.models import User
+from django.conf import settings  # <--- Best practice for importing settings
 import secrets
-
 import requests
 
-from school_fees_backend import settings
-
 class Payment(models.Model):
-    amount = models.PositiveIntegerField() # Amount in kobo (Paystack uses kobo)
+    # Link to the User (null=True allows guest payments without crashing)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True) 
+    amount = models.PositiveIntegerField()
     email = models.EmailField()
-    ref = models.CharField(max_length=200) # Paystack reference
+    ref = models.CharField(max_length=200)
     verified = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment: {self.amount}"
+        # Safety check: If there is a user, show their name. If not, show "Guest"
+        if self.user:
+            return f"{self.user.username} - {self.amount}"
+        return f"Guest - {self.amount}"
 
     def save(self, *args, **kwargs):
         while not self.ref:
             ref = secrets.token_urlsafe(50)
-            object_with_similar_ref = Payment.objects.filter(ref=ref)
-            if not object_with_similar_ref:
+            if not Payment.objects.filter(ref=ref).exists():
                 self.ref = ref
         super().save(*args, **kwargs)
 
@@ -32,11 +35,15 @@ class Payment(models.Model):
         url = f'https://api.paystack.co/transaction/verify/{self.ref}'
         headers = {'Authorization': f'Bearer {paystack_secret_key}'}
         
-        response = requests.get(url, headers=headers)
-        result = response.json()
-        
-        if result['data']['status'] == 'success':
-            self.verified = True
-            self.save()
-            return True
+        try:
+            response = requests.get(url, headers=headers)
+            result = response.json()
+            
+            if result['data']['status'] == 'success':
+                self.verified = True
+                self.save()
+                return True
+        except Exception as e:
+            print(f"Error verifying payment: {e}")
+            
         return False
