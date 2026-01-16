@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7#8+%jfbmpxge!tygw_3utu9g5ipfe#^$g-f(7s6ft5q+_%*cl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['~school-payment-system-jeaj.onrender.com']
+ALLOWED_HOSTS = ['~school-payment-system-jeaj.onrender.com', '127.0.0.1']
 
 
 # Application definition
@@ -38,11 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'payments',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -127,3 +130,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+PAYSTACK_PUBLIC_KEY = 'pk_test_a68953ade7db34fc062d623573d5942808c06158'
+PAYSTACK_SECRET_KEY = 'sk_test_3cb9dcdf97094127fd70ee24738ca66f3bbf5d16'
+CORS_ALLOW_ALL_ORIGINS = True 

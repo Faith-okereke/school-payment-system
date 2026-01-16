@@ -1,38 +1,50 @@
 # payments/views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpRequest
-from .models import Payment
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from django.contrib import messages
-import requests
+from .models import Payment
 
-def initiate_payment(request: HttpRequest):
+@csrf_exempt  # Allows your frontend to send data without a CSRF token
+def initiate_payment(request):
     if request.method == "POST":
-        amount = request.POST['amount']
-        email = request.POST['email']
+        # 1. Get the data sent from the Frontend
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            amount = data.get('amount') # Amount in Naira
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-        pk = settings.PAYSTACK_PUBLIC_KEY
+        if not email or not amount:
+            return JsonResponse({'error': 'Email and Amount are required'}, status=400)
 
-        payment = Payment.objects.create(amount=amount, email=email)
+        # 2. Save to Database
+        payment = Payment.objects.create(email=email, amount=amount)
         payment.save()
 
-        context = {
-            'payment': payment,
-            'field_values': request.POST,
-            'paystack_pub_key': pk,
-            'amount_value': payment.amount_value(),
-        }
-        return render(request, 'make_payment.html', context)
+        # 3. Send the keys back to Frontend so IT can open Paystack
+        return JsonResponse({
+            'status': 'success',
+            'email': payment.email,
+            'amount_kobo': payment.amount_value(),
+            'ref': payment.ref,
+            'public_key': settings.PAYSTACK_PUBLIC_KEY
+        })
 
-    return render(request, 'payment.html')
+    return JsonResponse({'error': 'Only POST requests allowed'}, status=405)
 
-def verify_payment(request: HttpRequest, ref: str):
-    payment = get_object_or_404(Payment, ref=ref)
-    verified = payment.verify_payment()
 
-    if verified:
-        messages.success(request, "Verification Successful")
-    else:
-        messages.error(request, "Verification Failed")
-    
-    return redirect('initiate_payment')
+@csrf_exempt
+def verify_payment(request, ref):
+    try:
+        payment = Payment.objects.get(ref=ref)
+        verified = payment.verify_payment()
+
+        if verified:
+            return JsonResponse({'status': 'success', 'message': 'Payment Verified'})
+        else:
+            return JsonResponse({'status': 'failed', 'message': 'Verification failed'}, status=400)
+
+    except Payment.DoesNotExist:
+        return JsonResponse({'error': 'Payment reference not found'}, status=404)
