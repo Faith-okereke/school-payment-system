@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-7#8+%jfbmpxge!tygw_3utu9g5ipfe#^$g-f(7s6ft5q+_%*cl'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['~school-payment-system-jeaj.onrender.com', '127.0.0.1']
+ALLOWED_HOSTS = ['~school-payment-system-jeaj.onrender.com', '127.0.0.1', 'localhost:5173']
 
 
 # Application definition
@@ -135,3 +135,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 PAYSTACK_PUBLIC_KEY = 'pk_test_a68953ade7db34fc062d623573d5942808c06158'
 PAYSTACK_SECRET_KEY = 'sk_test_3cb9dcdf97094127fd70ee24738ca66f3bbf5d16'
 CORS_ALLOW_ALL_ORIGINS = True 
+# settings.py
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
